@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Med Surge 3 Exam 1 - EXAM MODE</title>
+    <style>
+        :root {
+            --dark: #0a4a3a; --mid: #1a7a5e; --accent: #50e3a4;
+            --bg: #edfaf4; --border: #a8dfc8; --hover: #d0f5e8;
+            --nav: #c4edd9; --rat-bg: #d6f5ea; --rat-border: #1a7a5e; --text: #052a20;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter','Segoe UI',system-ui,sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: linear-gradient(145deg, var(--dark), var(--mid)); height:100vh; height:-webkit-fill-available; width:100vw; overflow:hidden; transition: background 0.4s; }
+        .container { width:100vw; height:100vh; height:-webkit-fill-available; background:var(--bg); display:flex; flex-direction:column; box-shadow:0 0 40px rgba(0,0,0,0.4); transition: background 0.4s; padding-bottom: env(safe-area-inset-bottom); }
+        .header { background:linear-gradient(145deg,var(--dark),var(--mid)); color:white; padding:12px 24px; flex-shrink:0; display:flex; justify-content:space-between; align-items:center; height:70px; border-bottom:4px solid var(--accent); }
+        .header h1 { font-size:1.4rem; font-weight:700; display:flex; align-items:center; gap:10px; }
+        .header h1 span { background:var(--accent); color:var(--dark); font-size:0.9rem; padding:4px 12px; border-radius:40px; font-weight:600; }
+        .subtitle { font-size:0.85rem; opacity:0.9; margin-top:2px; }
+        .counter { background:rgba(255,255,255,0.15); padding:6px 20px; border-radius:60px; font-weight:700; font-size:1.1rem; border:2px solid var(--accent); }
+        .progress-container { width:100%; height:6px; background:var(--border); flex-shrink:0; }
+        .progress-bar { background:linear-gradient(90deg,var(--accent),var(--mid)); height:100%; width:0%; transition:width 0.3s; }
+        .main-content { flex:1; display:flex; flex-direction:column; overflow:hidden; padding:16px 24px; background:var(--bg); }
+        .chapter-indicator { background:#fff; padding:6px 18px; border-radius:60px; display:inline-block; align-self:flex-start; margin-bottom:12px; font-weight:600; font-size:0.9rem; color:var(--dark); border:2px solid var(--accent); box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+        .chapter-indicator i { background:var(--dark); color:white; padding:2px 10px; border-radius:40px; margin-right:10px; font-style:normal; }
+        .badge { background:var(--accent); color:var(--dark); font-size:0.75rem; padding:3px 8px; border-radius:20px; margin-left:10px; font-weight:600; }
+        .question-area { flex:1; background:white; border-radius:24px; padding:20px; box-shadow:0 10px 20px rgba(0,0,0,0.1); border:2px solid var(--accent); overflow-y:auto; -webkit-overflow-scrolling:touch; margin-bottom:12px; display:flex; flex-direction:column; }
+        .question-header { display:flex; gap:15px; align-items:flex-start; margin-bottom:20px; }
+        .question-number { background:linear-gradient(145deg,var(--dark),var(--mid)); color:white; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; font-weight:bold; flex-shrink:0; border:2px solid var(--accent); }
+        .question-text { font-size:1.1rem; line-height:1.55; color:var(--text); font-weight:600; flex:1; }
+        .options-container { display:grid; gap:12px; margin-bottom:20px; }
+        .option { padding:14px 18px; border:2px solid var(--border); border-radius:18px; cursor:pointer; transition:all 0.15s; background:white; display:flex; align-items:center; gap:16px; font-size:1rem; min-height:54px; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+        .option:hover { background:var(--hover); border-color:var(--mid); }
+        .option-letter { background:linear-gradient(145deg,var(--mid),var(--dark)); color:white; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1rem; flex-shrink:0; border:2px solid var(--accent); transition:all 0.15s; }
+        .option.selected { background:#f0fff8; border-color:var(--accent); }
+        .option.selected .option-letter { background:var(--accent); color:var(--dark); border-color:var(--dark); }
+        .option.correct { background:#c8e6c9; border-color:#2e7d32; }
+        .option.correct .option-letter { background:#2e7d32; border-color:#1b5e20; color:white; }
+        .option.incorrect { background:#ffcdd2; border-color:#c62828; }
+        .option.incorrect .option-letter { background:#c62828; border-color:#8e1a1a; color:white; }
+        .rationale { background:var(--rat-bg); border:2px solid var(--rat-border); border-radius:16px; padding:16px; margin-top:8px; display:none; animation:slideIn 0.2s ease; flex-shrink:0; }
+        .rationale.show { display:block; }
+        .rationale h4 { color:var(--dark); font-size:1rem; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+        .rationale p { color:var(--text); line-height:1.5; font-size:0.95rem; }
+        .result-tag { display:inline-block; padding:3px 12px; border-radius:30px; font-size:0.85rem; font-weight:600; margin-left:12px; }
+        .result-tag.correct { background:#c8e6c9; color:#1b5e20; border:1px solid #2e7d32; }
+        .result-tag.incorrect { background:#ffcdd2; color:#b71c1c; border:1px solid #c62828; }
+        .navigation { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; background:var(--nav); border-top:2px solid var(--accent); flex-shrink:0; min-height:65px; flex-wrap:wrap; gap:8px; }
+        .nav-buttons { display:flex; gap:8px; }
+        .btn { padding:10px 20px; border:none; border-radius:50px; cursor:pointer; font-weight:600; transition:all 0.15s; display:flex; align-items:center; gap:8px; font-size:0.95rem; white-space:nowrap; box-shadow:0 4px 8px rgba(0,0,0,0.15); touch-action:manipulation; }
+        .btn-primary { background:linear-gradient(145deg,var(--mid),var(--dark)); color:white; }
+        .btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 15px rgba(0,0,0,0.2); }
+        .btn-secondary { background:linear-gradient(145deg,var(--mid),var(--dark)); color:white; opacity:0.85; }
+        .btn-secondary:hover:not(:disabled) { transform:translateY(-2px); opacity:1; }
+        .btn-random { background:linear-gradient(145deg,var(--accent),#28b87c); color:var(--dark); }
+        .btn-random:hover:not(:disabled) { transform:translateY(-2px); }
+        .btn-chapter { background:white; color:var(--dark); border:2px solid var(--accent); }
+        .btn-chapter:hover { background:var(--hover); transform:translateY(-2px); }
+        .btn-cancel { background:linear-gradient(145deg,#ef9a9a,#e57373); color:white; display:none; }
+        .btn-cancel.show { display:flex; }
+        .btn-skip { background:linear-gradient(145deg,#78909c,#546e7a); color:white; }
+        .btn-skip:hover:not(:disabled) { transform:translateY(-2px); opacity:0.9; }
+        .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none !important; }
+        .selected-indicator { font-size:0.85rem; color:var(--mid); margin-bottom:8px; }
+
+        /* Modal */
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(3px); }
+        .modal-overlay.open { display:flex; }
+        .modal { background:white; border-radius:28px; width:min(92vw,700px); height:88vh; display:flex; flex-direction:column; box-shadow:0 24px 60px rgba(0,0,0,0.35); overflow:hidden; animation:modalPop 0.2s ease; }
+        .modal-header { background:linear-gradient(145deg,var(--dark),var(--mid)); color:white; padding:18px 24px; display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--accent); flex-shrink:0; }
+        .modal-header h2 { font-size:1.15rem; font-weight:700; }
+        .modal-close { background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; }
+        .modal-close:hover { background:rgba(255,255,255,0.4); }
+        .modal-search { padding:14px 20px; border-bottom:1px solid #eee; flex-shrink:0; }
+        .modal-search input { width:100%; padding:9px 16px; border:2px solid var(--border); border-radius:50px; font-size:0.95rem; outline:none; }
+        .modal-search input:focus { border-color:var(--mid); }
+        .modal-body { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:16px 20px; display:flex; flex-direction:column; gap:10px; min-height:0; }
+        .ch-card { border:2px solid #e0e0e0; border-radius:16px; padding:12px 16px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:12px; background:white; }
+        .ch-card:hover { border-color:var(--mid); background:var(--hover); transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+        .ch-card.active { border-color:var(--accent); background:#f0fff8; box-shadow:0 4px 12px rgba(0,0,0,0.12); }
+        .ch-card.hidden { display:none !important; }
+        .ch-num { background:linear-gradient(145deg,var(--dark),var(--mid)); color:white; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; flex-shrink:0; border:2px solid var(--accent); }
+        .ch-info { flex:1; min-width:0; }
+        .ch-title { font-weight:600; font-size:0.82rem; color:#333; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .ch-count { font-size:0.72rem; color:#888; margin-top:2px; }
+
+        @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes modalPop { from { opacity:0; transform:scale(0.92) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+
+        @media (max-width: 430px) {
+            .header { padding:10px 14px; height:auto; min-height:60px; }
+            .header h1 { font-size:1.05rem; }
+            .subtitle { font-size:0.72rem; }
+            .counter { font-size:0.9rem; padding:5px 12px; }
+            .main-content { padding:10px 12px; }
+            .question-text { font-size:1rem; }
+            .option { font-size:0.93rem; padding:12px 12px; }
+            .btn { padding:9px 14px; font-size:0.83rem; }
+            .navigation { padding:8px 10px; }
+            .question-area { padding:14px; border-radius:18px; }
+            .chapter-indicator { font-size:0.78rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div>
+            <h1>🩺 MED SURGE 3 EXAM 1 <span>EXAM MODE</span></h1>
+            <div class="subtitle">52 questions &nbsp;|&nbsp; Chp: 10–12, 15, 23 &nbsp;·&nbsp; BSN 4 Version</div>
+        </div>
+        <div class="counter" id="counter">1/52</div>
+    </div>
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="main-content">
+        <div class="chapter-indicator" id="chapterDisplay">
+            <i id="chapterIcon">📗</i>
+            <span id="chapterName">Med Surge 3</span>
+            <span class="badge" id="qTypeBadge">Single</span>
+            <span id="resultTag" class="result-tag"></span>
+        </div>
+        <div class="question-area">
+            <div class="question-header">
+                <div class="question-number" id="questionNumber">1</div>
+                <div class="question-text" id="question"></div>
+            </div>
+            <div class="options-container" id="options"></div>
+            <div id="selectedCount" class="selected-indicator"></div>
+            <div class="rationale" id="rationale">
+                <h4>📗 RATIONALE</h4>
+                <p id="rationaleText"></p>
+            </div>
+        </div>
+    </div>
+    <div class="navigation">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousCard()">← Prev</button>
+            <button class="btn btn-random" id="randomBtn" onclick="randomCard()">🎲 Random</button>
+            <button class="btn btn-chapter" onclick="openChapterModal()">📚 Chapter</button>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn btn-skip" id="skipBtn" onclick="skipQuestion()">⏭ Skip</button>
+            <button class="btn btn-cancel" id="cancelBtn" onclick="cancelSelection()">✕ Clear</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextCard()">Next →</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chapter Modal -->
+<div class="modal-overlay" id="chapterModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>📚 Jump to Chapter</h2>
+            <button class="modal-close" onclick="closeChapterModal()">✕</button>
+        </div>
+        <div class="modal-search">
+            <input type="text" id="chSearch" placeholder="🔍  Search chapters..." oninput="filterChapters(this.value)" />
+        </div>
+        <div class="modal-body" id="chapterGrid"></div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var currentQuestion = 0;
+    var selectedOptions = [];
+    var answered = false;
+
+    var questions = [
+        {q:"A 75-year-old female brought in by ambulance (BIBA) for altered mental status. Further test suggests severe dehydration. A bolus of 250 ml of Lactated Ringer was ordered and an indwelling catheter was put in for strict I & O. Later in the afternoon, pt went into cardiac arrest and CPR was initiated. However the team failed to achieve return of spontaneous circulation (ROSC). Since it is considered a coroner's case, the nurse would:", opts:["Call the next of kin for mortuary information","Keep all lines/tubes intact until given clearance by the Deputy Officer","Place patient in cadaver bag and send to hospital's morgue","Immediately perform post-mortem care"], correct:[1], rationale:"When a death is a coroner's case (unexplained, traumatic, or unattended), all lines, tubes, and devices must be left in place until the coroner or deputy officer provides clearance. Removing them could destroy forensic evidence.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:1},
+        {q:"A new graduate nurse has started working on a medical-surgical unit. What actions would the nurse take to be prepared for a disaster? Select all that apply.", opts:["Develop a personal preparedness plan","Participate in the institution's disaster drill","Be prepared to report immediately to the emergency department","Understand that nurses play a role in every phase","Know the institution's Emergency Response Plan"], correct:[0,1,3,4], rationale:"Nurses prepare for disasters by building personal plans, participating in drills, understanding their role in all phases (mitigation, preparedness, response, recovery), and knowing the institution's emergency plan. Reporting to the ED is not automatic — assignment depends on the plan.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:2},
+        {q:"An emergency department (ED) charge nurse prepares to receive patients from a mass casualty within a community. What is the nurse's role during the event?", opts:["Ask ED staff to discharge patients from the medical surgical units to make room","Call additional med-surg and critical care nurses to come in","Inform the incident commander about how many victims the ED can handle","Direct medical-surgical and critical care nurses to assist with current ED patients while ER staff prepare for mass casualty victims"], correct:[3], rationale:"During a mass casualty event, the ED charge nurse's role is internal coordination — directing other unit nurses to cover current patients so ER staff can focus on incoming victims. Communication with the incident commander is the role of the hospital incident commander, not the charge nurse.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:3},
+        {q:"A nurse is preparing to administer dextrose 5% in 0.45% sodium chloride 1 L to infuse at 100 mL/hr. The nurse is using microtubing (60 gtt/mL). The nurse should set the manual IV infusion to deliver how many gtt/min?", opts:["60 gtt/min","80 gtt/min","100 gtt/min","120 gtt/min"], correct:[2], rationale:"Formula: [Volume(mL)/Time(min)] × Drop Factor = Flow Rate. Rate = 100 mL/hr ÷ 60 min = 1.667 mL/min. 1.667 × 60 gtt/mL = 100 gtt/min.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:4},
+        {q:"An emergency department nurse assesses a patient admitted after a lightning strike. Which assessment would the nurse complete first?", opts:["Computed tomography of head","Wound infection","Electrocardiography (ECG)","Creatinine Kinase"], correct:[2], rationale:"Lightning strikes cause massive electrical current through the body. The priority assessment is cardiac — lightning-induced dysrhythmias (including ventricular fibrillation and asystole) are the leading cause of death. ECG is assessed first.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:5},
+        {q:"A nurse is caring for a client who is brought into the emergency department immediately following a snake bite to his forearm. The client suspects the snake to be venomous. Which of the following interventions should the nurse take?", opts:["Apply a tourniquet just above the elbow","Administer a corticosteroid","Apply an ice pack to the site of the bite","Place the extremity in a dependent position"], correct:[3], rationale:"A dependent position slows the spread of venom by reducing lymphatic and venous return from the extremity. Tourniquets, ice, and incision are all contraindicated as they can worsen tissue damage and increase complications.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:6},
+        {q:"The nurse would explain to a client that when a major burn occurs, the body's initial systemic responses include:", opts:["Plasma leakage into surrounding tissue, decreased hematocrit, and oliguria","Production of epinephrine, vasodilation, and increased cardiac output","Increased capillary permeability, decreased cardiac output, and oliguria","Elevated pulse rate, decreased cardiac output, and polyuria"], correct:[2], rationale:"The emergent/resuscitative phase of burns is characterized by massive capillary leak (increased permeability), which causes plasma to shift into interstitial space, leading to decreased cardiac output and oliguria from reduced renal perfusion.", chapter:3, chapName:"Burns", displayNumber:7},
+        {q:"A nurse is the triage officer in the ED when four clients arrive following a factory explosion. Which client should the nurse care for first?", opts:["An unconscious adult with a sucking chest wound, respirations 38/min, and capillary refill < 2 seconds","An unconscious adult with no respirations, capillary refill > 2 seconds, and failed airway repositioning","A conscious adult with shortness of breath, RR 24/min, and capillary refill < 2 seconds","A conscious adult with a dislocated right shoulder, RR 18/min, and capillary refill < 2 seconds"], correct:[0], rationale:"In START triage, a sucking chest wound with rapid respirations but intact circulation is tagged RED (immediate). The patient in option B — no respirations after repositioning — is tagged BLACK (expectant). Option A is salvageable and most critical.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:8},
+        {q:"A nurse is assessing patients who have IV therapy prescribed. Which assessment finding for a patient with a PICC requires immediate attention?", opts:["A securement device is absent","Upper extremity swelling is noted","The PICC was inserted 4 weeks ago","The initial site dressing is 3 days old"], correct:[1], rationale:"Upper extremity swelling in a patient with a PICC suggests deep vein thrombosis (DVT), a serious complication that requires immediate assessment and intervention. The other findings are routine concerns but not emergent.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:9},
+        {q:"The physician orders 1% silver sulfadiazine cream applied to a client's burn wound twice daily. The nurse would be aware that this medication can affect:", opts:["Blood pH","Hemoglobin level","White blood cell count","Serum electrolyte levels"], correct:[2], rationale:"Silver sulfadiazine (Silvadene) can cause transient leukopenia (decreased WBC count), typically appearing 2–3 days after starting therapy. This is usually self-limiting but requires monitoring.", chapter:3, chapName:"Burns", displayNumber:10},
+        {q:"A nurse in an ED is caring for a client with a sucking chest wound from a gunshot. BP 100/60 mmHg, weak pulse 118/min, RR 40/min. Which action should the nurse take?", opts:["Administer oxygen via nasal cannula","Raise the foot of the bed to a 90 degree angle","Prepare to insert a central line","Remove the dressing to inspect the wound"], correct:[0], rationale:"For a sucking chest wound with respiratory distress, supplemental oxygen is the priority nursing intervention to address hypoxia. An occlusive dressing (not removal) would be used to seal the wound. Trendelenburg is contraindicated with respiratory distress.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:11},
+        {q:"A patient found unconscious in a burning bedroom has burns to the lower legs and a bright red face. Which action should the nurse take first?", opts:["Elevate the legs on pillows","Insert 2 large-bore IV lines","Place the patient on 100% O2 using a non-rebreather mask","Assess for singed nasal hair and dark oral mucous membranes"], correct:[2], rationale:"A bright red face after smoke/fire exposure indicates carbon monoxide poisoning. 100% oxygen via non-rebreather mask is the immediate treatment to displace carbon monoxide from hemoglobin. This is a life-threatening emergency — airway/oxygenation comes first.", chapter:3, chapName:"Burns", displayNumber:12},
+        {q:"A nurse is caring for a patient receiving an epidural infusion for pain management. Which assessment finding requires immediate intervention?", opts:["Redness at the catheter insertion site","Report of headache and stiff neck","Temperature of 100.1°F (37.8°C)","Pain rating of 8 on a scale of 0 to 10"], correct:[1], rationale:"Headache and stiff neck following epidural catheter insertion are signs of meningeal irritation or meningitis — a potentially life-threatening complication. This requires immediate removal of the catheter and provider notification.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:13},
+        {q:"A patient with extensive electrical burn injuries is admitted to the ED. Which health care provider order should the nurse implement first?", opts:["Apply dressings to burned areas","Place on cardiac monitor","Assess for pain at contact points","Start 2 large-bore IVs"], correct:[1], rationale:"Electrical burns cause cardiac dysrhythmias — even delayed ones. Cardiac monitoring is the first priority because life-threatening arrhythmias can occur before or after initial assessment. Always monitor the heart first with electrical injuries.", chapter:3, chapName:"Burns", displayNumber:14},
+        {q:"A nurse in an ED is assessing a client bitten on the left leg by a poisonous snake. The client applied elastic bandages above and below the bite and is in no apparent distress. Which action should the nurse take?", opts:["Remove both elastic bandages from the leg","Obtain a prescription for pain medication","Discharge the client","Obtain a prescription for the appropriate anti-venom"], correct:[3], rationale:"Even without apparent distress, a confirmed venomous snake bite requires anti-venom as the definitive treatment. Discharge would be dangerous as symptoms may be delayed. Anti-venom should be obtained promptly.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:15},
+        {q:"The nurse would assure a family member that for the first 24 hours after a burn injury, pain is kept to a minimum by administering:", opts:["Narcotics via intramuscular route into nonburned tissue","Tepid soaks and oral morphine","Intravenous narcotic agents","Liquid narcotics via a nasogastric tube"], correct:[2], rationale:"IV narcotics are used in the early emergent burn phase because absorption via IM or oral routes is unpredictable due to fluid shifts, poor peripheral perfusion, and GI ileus. IV administration ensures rapid, reliable pain relief.", chapter:3, chapName:"Burns", displayNumber:16},
+        {q:"A nurse is preparing to administer Lactated Ringer's 400 mL IV bolus to infuse over 3 hours. Drop factor is 20 gtt/mL. How many gtt/min?", opts:["40 gtt/min","44 gtt/min","50 gtt/min","55 gtt/min"], correct:[1], rationale:"Time = 3 hr × 60 min = 180 min. Rate = (400 mL ÷ 180 min) × 20 gtt/mL = 2.22 × 20 = 44.4 → 44 gtt/min.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:17},
+        {q:"A nurse teaches a patient being discharged home with a PICC. Which statement will the nurse include?", opts:["Avoid carrying your grandchild with the arm that has the central catheter","Flush the PICC line with normal saline daily","You can use the arm with the central catheter for most activities of daily living","Be sure to place the arm with the central catheter in a sling during the day"], correct:[0], rationale:"Patients with a PICC should avoid strenuous activities with the affected arm, including lifting heavy objects or children. Carrying a grandchild could dislodge or damage the catheter. Flushing frequency and sling use instructions are incorrect as stated.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:18},
+        {q:"A nurse is performing triage at a mass casualty incident. Which client should the nurse plan to care for first?", opts:["A client who has a closed upper extremity fracture","A client experiencing a tension pneumothorax","A client who has agonal respirations","A client who has full thickness burns over 80% of his body"], correct:[1], rationale:"A tension pneumothorax is an immediately life-threatening but treatable condition (RED/immediate tag). Agonal respirations and 80% full-thickness burns in a mass casualty context are tagged BLACK (expectant) as they are unlikely to survive with available resources. Tension pneumothorax is the salvageable priority.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:19},
+        {q:"A nurse is triaging clients following a mass casualty event. Which client should the nurse assess first?", opts:["A client with severe respiratory stridor and a deviated trachea","A client with a splinted open fracture of left medial malleolus","A client with a massive head injury experiencing seizures","A client with a small circular partial thickness burn of the left calf"], correct:[0], rationale:"Stridor with a deviated trachea indicates a tension pneumothorax or severe airway compromise — both immediately life-threatening but potentially treatable. This is a RED tag emergency requiring immediate intervention.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:20},
+        {q:"A 53-year-old woman collapses while gardening — unresponsive, not breathing, no pulse. A neighbor with an AED arrives. What is the first step for using the AED?", opts:["Clear the patient","Turn on the AED","Apply the pads to the chest","Press the Shock button"], correct:[1], rationale:"The first step with any AED is to turn it on. The device then guides the rescuer through the remaining steps (attach pads, analyze rhythm, shock if indicated). Turning it on activates the voice/visual prompts.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:21},
+        {q:"The ED team is performing CPR on a patient when the patient's spouse arrives. Which action would the nurse take first?", opts:["Request that the patient's spouse sit in the waiting room","Refer the patient's spouse to the hospital's crisis team","Suggest that the spouse begin to pray for the patient","Ask the spouse if he wishes to be present during the resuscitation"], correct:[3], rationale:"Family presence during resuscitation is supported by the ENA and AHA. The nurse should first ask the spouse's preference, respecting autonomy. Automatic exclusion violates family-centered care principles.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:22},
+        {q:"A nurse is triaging clients at a mass casualty explosion. Which client should the nurse tag as priority for care?", opts:["A client with severe head injuries, RR 6/min, unresponsive","A pregnant patient at 20 weeks with cuts and abrasions, walking","A client with a simple femur fracture, scratches, crying hysterically","A client with a piece of wood punctured in the chest wall with an audible hissing from the wound"], correct:[3], rationale:"An open chest wound with hissing (sucking chest wound) is an immediately life-threatening airway/breathing emergency — RED tag. Severe head injury with RR 6 is a BLACK tag. Ambulatory patients are GREEN or YELLOW.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:23},
+        {q:"A middle-aged mountain hiker is admitted with cough, pink frothy sputum, and cyanosis of lips and nailbeds. What priority action should the nurse implement?", opts:["Administer oxygen via non-rebreather mask","Administer acetazolamide (Diamox)","Obtain arterial blood gas (ABG) specimen","Complete a thorough pulmonary assessment"], correct:[0], rationale:"Pink frothy sputum and cyanosis indicate high-altitude pulmonary edema (HAPE), a life-threatening emergency. 100% oxygen via non-rebreather mask is the immediate priority to treat hypoxia. Descent and supplemental O2 are the primary interventions.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:24},
+        {q:"A nurse responds to an IV pump alarm related to increased pressure. What action will the nurse take first?", opts:["Remove the IV catheter and insert a new IV at a new site","Silence the alarm and restart the infusion on a new pump","Assess the infusion system starting at the insertion site","Flush the catheter with saline followed by a thrombolytic enzyme"], correct:[2], rationale:"Increased IV pump pressure indicates an obstruction somewhere in the system. The nurse should first systematically assess from the insertion site to find the cause (kink, clamp, infiltration, occlusion) before taking action.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:25},
+        {q:"A nurse is caring for patients in a busy ED. What actions should the nurse take to ensure patient and staff safety? Select all that apply.", opts:["Attempt de-escalation strategies for aggressive patients","Isolate patients with immune suppression to prevent hospital-acquired infections","Use two identifiers before each intervention and before medication administration","Leave the stretcher in the lowest position with rails down so the patient can access the bathroom","Search the belongings of patients with altered mental status to gain essential medical information"], correct:[0,2,4], rationale:"De-escalation reduces violence risk. Two identifiers prevent medication/treatment errors. Searching belongings of AMS patients helps identify medical conditions, allergies, and medications. Immune-suppressed patients are not isolated from others, and stretchers should have rails UP for safety.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:26},
+        {q:"A nurse in the ED is triaging clients following a mass casualty event. Which client should the nurse identify as emergent?", opts:["A client with a red rash over his abdomen","A client with a punctured femoral artery","A client who reports severe flank pain radiating to the groin","A client with multiple fractures"], correct:[1], rationale:"A punctured femoral artery is a life-threatening hemorrhage — the femoral artery is a major vessel and rapid exsanguination can occur. This is an emergent (RED) condition. Flank pain suggests kidney stones (urgent), not emergent.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:27},
+        {q:"A nurse is caring for a patient who just had a central venous access line inserted. What action will the nurse take next?", opts:["Check medication calculations with a second RN","Ensure that an x-ray is completed to confirm placement","Begin the prescribed infusion via the new access","Make sure the solution is appropriate for a central line"], correct:[1], rationale:"After central line insertion, a chest x-ray must confirm proper placement before any fluids or medications are administered. Using an improperly placed central line risks pneumothorax or misinfusion.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:28},
+        {q:"An ED charge nurse notes increased sick calls and bickering among staff after a week with multiple trauma incidents. What action would the nurse take?", opts:["Organize a pizza party for each staff","Talk individually with staff members","Arrange for critical incident stress debriefing","Remind the staff of the facility's sick leave policy"], correct:[2], rationale:"These are signs of cumulative stress and burnout after traumatic events. Critical Incident Stress Debriefing (CISD) is the evidence-based intervention to process traumatic experiences as a group and prevent post-traumatic stress disorder.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:29},
+        {q:"A nurse is preparing to administer TPN 1800 mL to infuse over 24 hours. The nurse should set the IV pump to deliver how many mL/hr?", opts:["65 mL/hr","70 mL/hr","75 mL/hr","80 mL/hr"], correct:[2], rationale:"1800 mL ÷ 24 hr = 75 mL/hr.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:30},
+        {q:"During the early emergent phase of burns, the nurse will anticipate giving opioid analgesics by the IV route so that:", opts:["Respiratory depression can be easily treated","The medications will be rapidly effective","Less frequent administration is needed","Larger doses of medications can be given"], correct:[1], rationale:"In the emergent phase, poor peripheral perfusion and fluid shifts make IM and subcutaneous absorption unreliable and delayed. IV opioids bypass absorption issues and provide rapid, predictable pain relief.", chapter:3, chapName:"Burns", displayNumber:31},
+        {q:"A nurse is teaching clients about emergency care for a snake bite. Which information should the nurse include?", opts:["Immobilize the affected extremity with a splint","Apply a tourniquet to the affected extremity","Raise the affected extremity above the level of the heart","Apply ice to the bite area"], correct:[0], rationale:"Immobilizing the extremity limits muscle movement, which slows venom spread through the lymphatic system. Tourniquets, elevation above the heart, and ice are all contraindicated and can worsen outcomes.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:32},
+        {q:"A nurse is caring for patients in a busy ED. What actions should the nurse take to ensure patient and staff safety? Select all that apply. (repeated question)", opts:["Attempt de-escalation strategies for aggressive patients","Isolate patients with immune suppression to prevent hospital-acquired infections","Use two identifiers before each intervention and before medication administration","Leave the stretcher in the lowest position with rails down so the patient can access the bathroom","Search the belongings of patients with altered mental status to gain essential medical information"], correct:[0,2,4], rationale:"Same as Q26. De-escalation, two-identifier verification, and searching AMS belongings are correct safety measures. Isolation of immune-suppressed patients is not routine in the ED, and stretchers should have rails UP.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:33},
+        {q:"A patient with deep partial/full thickness burns of the face and chest has wounds treated with open method. The nurse identifies an expected outcome of absence of wound infections. An appropriate nursing action is:", opts:["Administer prophylactic antibiotics to prevent bacterial colonization","Wear gowns, caps, masks, and gloves during all care of the patient","Restrict all visitors to prevent cross-contamination","Use sterile water for cleansing in the hydrotherapy tank"], correct:[1], rationale:"Standard burn isolation precautions include wearing gowns, caps, masks, and gloves during all direct patient care. Prophylactic antibiotics are not standard (they promote resistance), and complete visitor restriction is not required.", chapter:3, chapName:"Burns", displayNumber:34},
+        {q:"A client has a circumferential third degree burn on the upper left arm. The nursing assessments specific for this client would include:", opts:["Monitoring blood pressure in the left arm","Evaluating left hand strength","Assessing capillary refill in the left hand","Measuring left forearm circumference"], correct:[2], rationale:"A circumferential burn can cause compartment syndrome by restricting circulation distal to the burn. Assessing capillary refill in the left hand checks for arterial compromise — the priority vascular assessment. BP measurement is unreliable on a burned extremity.", chapter:3, chapName:"Burns", displayNumber:35},
+        {q:"A nurse prepares to administer a blood transfusion and checks the blood label using the ISBT universal bar-coding system. Which components must be present on the blood label in bar code AND eye-readable format? Select all that apply.", opts:["ABO group and Rh type of the donor","Lot number related to the donor","Unique facility identifier","Blood type of the patient receiving blood","Name of the patient receiving blood"], correct:[0,1,2], rationale:"The ISBT 128 standard requires ABO/Rh type, donation ID (lot number), and the unique facility identifier on the label in both bar code and eye-readable format. The recipient's blood type and name are on the compatibility label, not the donor blood label.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:36},
+        {q:"A 200-pound client is receiving fluid replacement after 35% of the body was burned. The nurse would anticipate fluid resuscitation of at least:", opts:["1400 ml in 24 hours","6364 ml in 24 hours","140 ml/hour","63 ml/hour"], correct:[1], rationale:"Parkland Formula: 4 mL × kg × % TBSA. Convert 200 lb to kg: 200 ÷ 2.2 = 90.9 kg. 4 × 90.9 × 35 = 12,726 mL / 2 = 6,363 mL. (First half in 8 hr, second half over 16 hr.) ≈ 6364 mL in 24 hours.", chapter:3, chapName:"Burns", displayNumber:37},
+        {q:"A nurse is preparing to administer 0.9% NSS 3000 mL IV over 24 hours. Drop factor is 10 gtt/mL. How many gtt/min?", opts:["18 gtt/min","19 gtt/min","21 gtt/min","25 gtt/min"], correct:[2], rationale:"Time = 24 hr × 60 min = 1440 min. Rate = (3000 ÷ 1440) × 10 = 2.083 × 10 = 20.83 → 21 gtt/min.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:38},
+        {q:"A nurse in an ED is preparing to care for a client with multiple system trauma after a motor vehicle crash. Which should the nurse identify as the priority focus of care?", opts:["Decreasing intracranial pressure","Stabilizing cardiac arrhythmias","Airway protection","Preventing musculoskeletal disability"], correct:[2], rationale:"Airway is always the first priority in trauma care (ABC framework). Without a patent airway, all other interventions are futile. This follows Advanced Trauma Life Support (ATLS) priorities.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:39},
+        {q:"A nurse assesses a patient's peripheral IV site and notices edema and tenderness above the site. What action will the nurse take next?", opts:["Elevate the extremity on a pillow","Stop the infusion of intravenous fluids","Flush the catheter with normal saline","Apply cold compresses to the IV site"], correct:[1], rationale:"Edema and tenderness above an IV site indicate infiltration — IV fluid is leaking into surrounding tissue. The immediate action is to stop the infusion to prevent further tissue damage.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:40},
+        {q:"What is the primary goal of a triage system used by the nurse with patients presenting to the ED?", opts:["Evaluate the ED's resources to adequately treat the patient","Determine whether the patient is responsive enough to provide information","Assess the status of airway, breathing, circulation","Determine the acuity of the patient's condition to determine priority of care"], correct:[3], rationale:"The primary purpose of triage is to prioritize care by determining the acuity of each patient's condition. This ensures the sickest patients receive care first when resources are limited.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:41},
+        {q:"A nurse is triaging patients in the ED. Which patient would the nurse prioritize to receive care first?", opts:["A 22-year-old with a painful and swollen right wrist","A 60-year-old reporting difficulty swallowing and nausea","A 45-year-old reporting chest pain and diaphoresis","An 81-year-old with RR 28/min and temperature of 101°F"], correct:[2], rationale:"Chest pain with diaphoresis is a classic presentation of acute MI — an immediately life-threatening emergency (Level 1 triage). All other presentations are urgent but not immediately life-threatening.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:42},
+        {q:"While at a public park, a nurse encounters a person immediately after a bee sting. Lips are swollen and wheezes are audible. Which action should the nurse take first?", opts:["Elevate the site and notify the person's next of kin","Remove the stinger with tweezers and encourage rest","Administer diphenhydramine (Benadryl) and apply ice","Administer an EpiPen from the first aid kit and call 911"], correct:[3], rationale:"Lip swelling and wheezing after a bee sting indicate anaphylaxis — a life-threatening emergency. Epinephrine (EpiPen) is the first-line treatment. Benadryl is an adjunct, not a first-line treatment for anaphylaxis.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:43},
+        {q:"Which among these rhythms is NOT considered a cardiac arrest rhythm?", opts:["Ventricular Fibrillation","Pulseless Electrical Activity (PEA)","Atrial Fibrillation with Rapid Ventricular Response","Pulseless Ventricular Tachycardia"], correct:[2], rationale:"Atrial fibrillation with rapid ventricular response (AFib RVR) is a dangerous dysrhythmia but the patient typically has a pulse. The cardiac arrest rhythms are: Ventricular Fibrillation, Pulseless VTach, PEA, and Asystole.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:44},
+        {q:"The nurse would perform close respiratory assessment for a client with inhalation injuries because lung tissue damage resulting from smoke inhalation is caused by:", opts:["Anoxia from lowered blood oxygen content","Chemical action on lung tissues","Carbon monoxide poisoning","Heat damage from superheated air"], correct:[1], rationale:"The primary cause of lung tissue damage from smoke inhalation is the chemical irritants in smoke (aldehydes, acids, particulates) that directly injure the tracheobronchial mucosa. Heat damage occurs in the upper airway only, as the airway efficiently cools inhaled air before it reaches the lower airways.", chapter:3, chapName:"Burns", displayNumber:45},
+        {q:"A nurse working in an ED is caring for a client with third-degree frostbite to both lower extremities. The nurse should plan to:", opts:["Immerse the legs in cool water","Elevate the legs","Massage the legs","Apply dry heat to the legs"], correct:[1], rationale:"Elevating frostbitten extremities helps reduce edema and improves venous return. Cool water immersion would worsen tissue damage. Massage can rupture ice crystals in cells and cause mechanical injury. Dry heat (like heating pads) can burn insensate tissue.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:46},
+        {q:"A nurse is assisting with field triage after a bus crash with multiple victims. The nurse assesses a child with an open fracture of the femur. Which action should the nurse take?", opts:["Locate the child's parents to obtain consent for treatment","Place a yellow triage tag on the child","Notify the emergency department of the child's imminent arrival","Perform a complete head-to-toe assessment"], correct:[1], rationale:"An open femur fracture is a serious but not immediately life-threatening injury. In START/JumpSTART triage, this child — who presumably has adequate respirations and circulation — is tagged YELLOW (delayed). In a mass casualty event, consent is assumed and head-to-toe assessment is deferred.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:47},
+        {q:"A medical-surgical nurse is concerned about IV therapy complications including bloodstream infection. Which intervention should the nurse suggest to make the biggest impact on decreasing complications?", opts:["Initiate a dedicated team to insert access devices","Require additional education for all nurses","Limit the use of peripheral venous access devices","Perform quality control testing on skin preparation products"], correct:[0], rationale:"Evidence shows that dedicated IV/vascular access teams have the greatest impact on reducing catheter-related bloodstream infections (CRBSIs). Consistent technique, training, and experience of a specialized team outperforms general nursing education or product testing.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:48},
+        {q:"A hospital prepares for a mass casualty event. Which functions are correctly paired with the personnel role? Select all that apply.", opts:["Paramedic — Decides the number, acuity, and resource needs of clients","Hospital incident commander — Assumes overall leadership for implementing the emergency plan","Public information officer — Provides advanced life support during transportation","Triage officer — Rapidly evaluates each client to determine priorities for treatment","Medical command physician — Serves as liaison between the health care facility and the media"], correct:[1,3], rationale:"The hospital incident commander assumes overall leadership. The triage officer rapidly sorts patients by priority. The medical command physician directs medical care at the scene (not media liaison). The public information officer handles media. Paramedics provide ALS transport, not resource allocation.", chapter:1, chapName:"Emergency & Disaster Nursing", displayNumber:49},
+        {q:"The nurse caring for a burn client would monitor the client's stools for occult blood as assessment for development of:", opts:["Intestinal ileus","Stress ulcers","Bleeding caused by bowel distention","Gastric irritation related to smoke"], correct:[1], rationale:"Burn patients are at high risk for Curling's ulcers (stress ulcers of the stomach and duodenum) due to ischemia, hyperacidity, and physiologic stress. Monitoring stool for occult blood detects early GI bleeding.", chapter:3, chapName:"Burns", displayNumber:50},
+        {q:"A nurse is caring for a client with a peripheral vascular access device experiencing pain, redness, and swelling at the site. After removing the device, which action should the nurse take to relieve pain?", opts:["Administer topical lidocaine to the site","Place warm compresses on the site","Administer prescribed oral pain medication","Massage the site with scented oils"], correct:[1], rationale:"Warm compresses promote vasodilation, increase circulation to the area, reduce inflammation, and relieve pain associated with phlebitis after IV removal. Massaging the site risks spreading inflammation or a clot.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:51},
+        {q:"A nurse delegates care to a UAP. Which statement should the nurse include when delegating hygiene for a client with a vascular access device?", opts:["Provide a bed bath instead of letting the client take a shower","Use sterile technique when changing the dressing","Disconnect the IV fluid tubing prior to the client's bath","Use a plastic bag to cover the extremity with the device"], correct:[3], rationale:"Covering the vascular access device with a plastic bag protects it from water during bathing and is a safe, practical instruction for a UAP. Dressing changes require sterile technique and should be performed by a nurse, not delegated. Disconnecting tubing risks contamination.", chapter:2, chapName:"IV Therapy & Calculations", displayNumber:52}
+    ];
+
+    var chapterList = [
+        {ch:1, name:"Emergency & Disaster Nursing", count: questions.filter(function(q){return q.chapter===1;}).length},
+        {ch:2, name:"IV Therapy & Calculations", count: questions.filter(function(q){return q.chapter===2;}).length},
+        {ch:3, name:"Burns", count: questions.filter(function(q){return q.chapter===3;}).length}
+    ];
+
+    var chapterIndex = {};
+    questions.forEach(function(q, idx) {
+        if (!chapterIndex[q.chapter]) chapterIndex[q.chapter] = {firstIdx: idx};
+    });
+
+    function isMultiSelect(q) { return q.correct.length > 1; }
+
+    function updateSelectedCount() {
+        var q = questions[currentQuestion];
+        var el = document.getElementById('selectedCount');
+        if (isMultiSelect(q) && !answered) {
+            el.textContent = selectedOptions.length > 0 ? 'Selected: ' + selectedOptions.length + ' of ' + q.correct.length + ' correct answers' : 'Select all that apply';
+        } else { el.textContent = ''; }
+    }
+
+    function applyTheme() {
+        // Theme is constant — teal/green
+    }
+
+    function selectOption(idx) {
+        if (answered) return;
+        var q = questions[currentQuestion];
+        if (isMultiSelect(q)) {
+            var pos = selectedOptions.indexOf(idx);
+            if (pos === -1) { selectedOptions.push(idx); }
+            else { selectedOptions.splice(pos, 1); }
+            var opts = document.querySelectorAll('.option');
+            opts.forEach(function(o, i) {
+                o.classList.toggle('selected', selectedOptions.indexOf(i) !== -1);
+            });
+            updateSelectedCount();
+            var cancelBtn = document.getElementById('cancelBtn');
+            if (selectedOptions.length > 0) { cancelBtn.classList.add('show'); }
+            else { cancelBtn.classList.remove('show'); }
+            if (selectedOptions.length === q.correct.length) {
+                document.getElementById('nextBtn').disabled = false;
+                submitAnswer();
+            }
+        } else {
+            selectedOptions = [idx];
+            var opts = document.querySelectorAll('.option');
+            opts.forEach(function(o, i) { o.classList.toggle('selected', i === idx); });
+            updateSelectedCount();
+            document.getElementById('cancelBtn').classList.add('show');
+            document.getElementById('nextBtn').disabled = false;
+            submitAnswer();
+        }
+    }
+
+    function submitAnswer() {
+        answered = true;
+        var q = questions[currentQuestion];
+        var isCorrect = selectedOptions.length === q.correct.length &&
+            selectedOptions.every(function(i){ return q.correct.indexOf(i) !== -1; });
+        var opts = document.querySelectorAll('.option');
+        opts.forEach(function(o, i) {
+            o.classList.remove('selected');
+            if (q.correct.indexOf(i) !== -1) { o.classList.add('correct'); }
+            else if (selectedOptions.indexOf(i) !== -1) { o.classList.add('incorrect'); }
+        });
+        var tag = document.getElementById('resultTag');
+        tag.textContent = isCorrect ? '✓ Correct' : '✗ Incorrect';
+        tag.className = 'result-tag ' + (isCorrect ? 'correct' : 'incorrect');
+        document.getElementById('rationaleText').textContent = q.rationale;
+        document.getElementById('rationale').classList.add('show');
+        document.getElementById('cancelBtn').classList.remove('show');
+        document.getElementById('nextBtn').disabled = false;
+    }
+
+    function cancelSelection() {
+        selectedOptions = [];
+        var opts = document.querySelectorAll('.option');
+        opts.forEach(function(o) { o.classList.remove('selected','correct','incorrect'); });
+        document.getElementById('rationale').classList.remove('show');
+        document.getElementById('resultTag').innerHTML = '';
+        document.getElementById('resultTag').className = 'result-tag';
+        document.getElementById('cancelBtn').classList.remove('show');
+        document.getElementById('nextBtn').disabled = true;
+        answered = false;
+        updateSelectedCount();
+    }
+
+    function skipQuestion() {
+        cancelSelection();
+        nextCard();
+    }
+
+    function nextCard() {
+        if (currentQuestion < questions.length - 1) { currentQuestion++; loadQuestion(); }
+        else { currentQuestion = 0; loadQuestion(); }
+    }
+
+    function previousCard() {
+        if (currentQuestion > 0) { currentQuestion--; loadQuestion(); }
+    }
+
+    function randomCard() {
+        var idx;
+        do { idx = Math.floor(Math.random() * questions.length); }
+        while (idx === currentQuestion && questions.length > 1);
+        currentQuestion = idx;
+        loadQuestion();
+    }
+
+    function buildChapterGrid() {
+        var grid = document.getElementById('chapterGrid');
+        grid.innerHTML = '';
+        var currentCh = questions[currentQuestion].chapter;
+        chapterList.forEach(function(item) {
+            var ch = item.ch;
+            var card = document.createElement('div');
+            card.className = 'ch-card' + (ch === currentCh ? ' active' : '');
+            card.id = 'ch-card-' + ch;
+            card.setAttribute('data-name', ('chapter ' + ch + ' ' + item.name).toLowerCase());
+            card.innerHTML = '<div class="ch-num">' + ch + '</div><div class="ch-info"><div class="ch-title">Ch ' + ch + ': ' + item.name + '</div><div class="ch-count">' + item.count + ' questions</div></div>';
+            card.onclick = (function(c){ return function(){ jumpToChapter(c); }; })(ch);
+            grid.appendChild(card);
+        });
+        var active = document.getElementById('ch-card-' + currentCh);
+        if (active) setTimeout(function(){ active.scrollIntoView({block:'nearest',behavior:'smooth'}); }, 50);
+    }
+
+    function jumpToChapter(ch) {
+        currentQuestion = chapterIndex[ch].firstIdx;
+        loadQuestion();
+        closeChapterModal();
+    }
+
+    function openChapterModal() {
+        buildChapterGrid();
+        document.getElementById('chSearch').value = '';
+        document.getElementById('chapterModal').classList.add('open');
+    }
+
+    function closeChapterModal() {
+        document.getElementById('chapterModal').classList.remove('open');
+    }
+
+    function filterChapters(query) {
+        var q = query.toLowerCase().trim();
+        document.querySelectorAll('.ch-card').forEach(function(card) {
+            card.classList.toggle('hidden', q !== '' && !card.getAttribute('data-name').includes(q));
+        });
+    }
+
+    document.getElementById('chapterModal').addEventListener('click', function(e) {
+        if (e.target === this) closeChapterModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('chapterModal').classList.contains('open')) {
+            if (e.key === 'Escape') closeChapterModal();
+            return;
+        }
+        if (e.key >= '1' && e.key <= '6') {
+            var idx = parseInt(e.key) - 1;
+            if (idx < questions[currentQuestion].opts.length) selectOption(idx);
+        } else if (e.key >= 'a' && e.key <= 'f') { selectOption(e.key.charCodeAt(0) - 97);
+        } else if (e.key >= 'A' && e.key <= 'F') { selectOption(e.key.charCodeAt(0) - 65);
+        } else if (e.key === 'ArrowLeft' && !document.getElementById('prevBtn').disabled) { previousCard();
+        } else if (e.key === 'ArrowRight' && !document.getElementById('nextBtn').disabled) { nextCard();
+        } else if (e.key === 'Escape' && document.getElementById('cancelBtn').classList.contains('show')) { cancelSelection();
+        } else if (e.key === 'r' || e.key === 'R') { randomCard();
+        } else if (e.key === 's' || e.key === 'S') { skipQuestion();
+        }
+    });
+
+    function loadQuestion() {
+        var q = questions[currentQuestion];
+        if (!q) return;
+        selectedOptions = [];
+        answered = false;
+        document.getElementById('chapterName').textContent = 'Ch ' + q.chapter + ': ' + q.chapName;
+        document.getElementById('qTypeBadge').textContent = isMultiSelect(q) ? 'Multiple' : 'Single';
+        document.getElementById('questionNumber').textContent = q.displayNumber;
+        document.getElementById('question').textContent = q.q;
+        document.getElementById('counter').textContent = (currentQuestion + 1) + '/' + questions.length;
+        document.getElementById('rationale').classList.remove('show');
+        document.getElementById('resultTag').innerHTML = '';
+        document.getElementById('resultTag').className = 'result-tag';
+        document.getElementById('cancelBtn').classList.remove('show');
+        document.getElementById('nextBtn').disabled = true;
+        document.getElementById('prevBtn').disabled = currentQuestion === 0;
+        var pct = ((currentQuestion + 1) / questions.length * 100).toFixed(1);
+        document.getElementById('progressBar').style.width = pct + '%';
+        var container = document.getElementById('options');
+        container.innerHTML = '';
+        q.opts.forEach(function(opt, i) {
+            var div = document.createElement('div');
+            div.className = 'option';
+            div.innerHTML = '<div class="option-letter">' + String.fromCharCode(65 + i) + '</div><div>' + opt + '</div>';
+            div.onclick = (function(idx){ return function(){ selectOption(idx); }; })(i);
+            container.appendChild(div);
+        });
+        updateSelectedCount();
+    }
+
+    window.previousCard = previousCard;
+    window.nextCard = nextCard;
+    window.skipQuestion = skipQuestion;
+    window.cancelSelection = cancelSelection;
+    window.randomCard = randomCard;
+    window.openChapterModal = openChapterModal;
+    window.closeChapterModal = closeChapterModal;
+    window.filterChapters = filterChapters;
+
+    loadQuestion();
+})();
+</script>
+</body>
+</html>
